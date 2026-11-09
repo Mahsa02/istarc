@@ -1,9 +1,30 @@
-# istarc
-BMCS 4480 - Smriti Vaidyanathan &amp; Mahsa Mohajeri
+# iSTAR-C: Cell-Type-Aware Super-Resolution Spatial Transcriptomics
 
-iSTAR-C extends the original iSTAR (Zhang et al., 2024) pipeline by adding biologically informed supervision for pixel-level cell-type prediction alongside gene-expression imputation. It uses Starfysh-derived spot-level cell-type proportions to guide a new cell-type head and optional heat-diffusion pseudo-labels to provide weak supervision outside Visium spots. The result is a model that retains iSTAR’s histology-driven gene-expression mapping while producing spatially resolved cell-type estimates.
+Team project for BMCS 4480 (Columbia University) by **Smriti Vaidyanathan** and **Mahsa Mohajeri**.
+
+iSTAR-C extends [iSTAR](https://github.com/daviddaiweizhang/istar) (Zhang et al., 2024), which predicts pixel-level gene expression from histology images, by adding biologically informed supervision for cell types:
+
+- **Cell-type head:** a new output head trained on spot-level cell-type proportions inferred with [Starfysh](https://github.com/azizilab/starfysh).
+- **Weak supervision outside spots:** optional heat-diffusion pseudo-labels ("fake HD spots") that extend the training signal beyond measured Visium spots.
+
+The goal is a model that keeps iSTAR's histology-driven gene-expression mapping while also producing spatially resolved cell-type estimates.
+
+## Results
+
+Evaluated on the 10x Genomics Visium adult mouse brain section, comparing predicted gene maps against pixel-level heat-diffused expression.
+
+![Predicted Ptpn4 expression with and without cell-type supervision](docs/istarc_gene_map_ptpn4.jpg)
+
+![Gene-expression agreement metrics with and without cell-type supervision](docs/istarc_metrics.png)
+
+- Adding cell-type supervision leaves gene-expression accuracy essentially unchanged: Spearman correlation, SSIM, and top-5% Jaccard/Dice overlap are nearly identical with and without cell-type proportions.
+- The model gains pixel-level cell-type estimates at no measurable cost to gene-expression imputation.
+- Limitation: the reference is heat-diffused spot data rather than true single-cell resolution measurements, so these metrics measure agreement with a smoothed pseudo-ground truth.
 
 ## Directory Guide
+- **data/signatures.csv**: mouse brain cell-type marker signatures used by Starfysh.
+- **data/gene-names.txt**: the ~1,000 highly variable genes used for heat diffusion and training.
+- **docs/**: figures used in this README.
 - **notebooks/cell_marker_data_analysis.ipynb**: explores marker lists and expression patterns used downstream.
 - **notebooks/cell_segmentation_comparison.ipynb**: compares segmentation outputs across methods.
 - **notebooks/dataset_creator.ipynb**: assembles inputs into the format Starfysh/iSTAR expect.
@@ -26,11 +47,11 @@ iSTAR-C extends the original iSTAR (Zhang et al., 2024) pipeline by adding biolo
 
 ## End-to-End Usage (Starfysh, Heat Diffusion, iSTAR)
 1) Download the spatial output data from https://www.10xgenomics.com/datasets/mouse-brain-section-coronal-1-standard
-2) Organize the data the way Starfysh expects (an example is in the `data` folder):
-   - `data/signatures.csv` (you can use the provided markers file).
+2) Organize the data the way Starfysh expects:
+   - `data/signatures.csv` (provided in this repository).
    - `data/visium_mouse_brain/` containing everything from the spatial outputs data folder mentioned above.
 3) Once data is in that format, run `notebooks/starfysh.ipynb` to output and explore the predicted cell-type proportions; save the AnnData with inferred CT proportions somewhere accessible. (make sure you install starfysh)
-4) To get heat-diffused genes, run `notebooks/heat_diffusion_pixel_level_only.ipynb`; it currently runs on the top ~1000 highly variable genes (same set used for training, a copy is under `data`); save the notebook outputs into a folder.
+4) To get heat-diffused genes, run `notebooks/heat_diffusion_pixel_level_only.ipynb`; it currently runs on the top ~1000 highly variable genes (same set used for training, listed in `data/gene-names.txt`); save the notebook outputs into a folder.
 5) Clone the iSTAR repository:
    - `git clone https://github.com/daviddaiweizhang/istar.git`
    - Then add all the files inside this repository’s `src/istar_files_we_changed` into the cloned repo, replacing old versions and adding any new files.
