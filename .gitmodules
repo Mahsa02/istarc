@@ -1,0 +1,3 @@
+[submodule "istar"]
+	path = istar
+	url = https://github.com/daviddaiweizhang/istar.git
