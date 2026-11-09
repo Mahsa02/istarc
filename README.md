@@ -9,6 +9,12 @@ iSTAR-C extends [iSTAR](https://github.com/daviddaiweizhang/istar) (Zhang et al.
 
 The goal is a model that keeps iSTAR's histology-driven gene-expression mapping while also producing spatially resolved cell-type estimates.
 
+## Team and contributions
+
+- **Mahsa Mohajeri:** built the mouse brain cell-type marker set, generated the pixel-level heat-diffusion gene maps used as pseudo-labels, and built the iSTAR vs. heat-diffusion evaluation.
+- **Smriti Vaidyanathan:** added the cell-type classification head and loss to iSTAR, ran Starfysh to infer spot-level cell-type proportions, and set up the iSTAR training runs.
+- Both contributed to the heat-diffusion and comparison notebooks.
+
 ## Results
 
 Evaluated on the 10x Genomics Visium adult mouse brain section, comparing predicted gene maps against pixel-level heat-diffused expression.
